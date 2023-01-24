@@ -6,7 +6,7 @@ from sklearn.preprocessing import PolynomialFeatures, StandardScaler
 from sklearn.pipeline import Pipeline
 from sklearn.ensemble import AdaBoostRegressor
 from sklearn.ensemble import GradientBoostingRegressor
-from sklearn.linear_model import Lars,Lasso,LassoLars,Ridge,BayesianRidge,ElasticNet,HuberRegressor,LinearRegression,SGDRegressor,PassiveAggressiveRegressor,QuantileRegressor,ARDRegression,OrthogonalMatchingPursuit
+from sklearn.linear_model import Lars,Lasso,LassoLars,Ridge,BayesianRidge,ElasticNet,HuberRegressor,LinearRegression,SGDRegressor,PassiveAggressiveRegressor,ARDRegression,OrthogonalMatchingPursuit
 from sklearn.metrics import mean_squared_error
 from sklearn.model_selection import cross_val_score
 from sklearn.neural_network import MLPRegressor
@@ -31,8 +31,8 @@ if __name__ == '__main__':
             Y.append(float(entry))
 
     scoring = "neg_mean_squared_error"
-    k_folds = 7 #number of folds to cut data into for training
-    num_shuffles = 10 #number of times to score models (data shuffled every time)
+    k_fold_max = 7 #number of folds to cut data into for training
+    num_shuffles = 25 #number of times to score models (data shuffled every time)
     print("Initializing Models...")
     models = [
             ['DecisionTreeRegressor :',DecisionTreeRegressor()],
@@ -51,7 +51,6 @@ if __name__ == '__main__':
             ['Lasso: ', Lasso()],
             ['Lars: ', Lars(normalize=False)],
             ['LassoLars: ', LassoLars(normalize=False)],
-            ['QuantileRegressor: ', QuantileRegressor()],
             ['ARDRegression: ', ARDRegression()],
             ['Ridge: ', Ridge()],
             ['KernelRidge: ', KernelRidge()],
@@ -59,12 +58,37 @@ if __name__ == '__main__':
             ['ElasticNet: ', ElasticNet()],
             ['HuberRegressor: ', HuberRegressor()]]
 
-    worst_scores = {} #save worst score for each model over all attempts
-    for i in range(num_shuffles):
-        X, Y = shuffle(X, Y)
-        for j in range(len(models)):
-            name, model = models[j]
-            scores = cross_val_score(model, X, Y, cv=k_folds, scoring=scoring)
-            worst_scores[name] = min(min(scores), worst_scores.get(name, 0))
-            print("Scoring models... " + str(100*((j+1)+(i*len(models)))/(len(models)*10)) + "%")
-    print("Final results: \n" + str(worst_scores))
+    for k_fold in range(k_fold_max-1): #get worst score for each model for each k-fold value
+        worst_scores = {} #save worst score for each model over all attempts with this k-fold
+        for i in range(num_shuffles):
+            X, Y = shuffle(X, Y)
+            for j in range(len(models)):
+                name, model = models[j]
+                scores = cross_val_score(model, X, Y, cv=k_fold+2, scoring=scoring)
+                worst_scores[name] = min(min(scores), worst_scores.get(name, 0))
+                current_k_progress = ((j+1)+(i*len(models)))/(len(models)*num_shuffles)
+                overall_progress = (k_fold + current_k_progress)/(k_fold_max)
+                print("Scoring models... " + str(100*overall_progress) + "%                ", end="\r")
+    print("Final results w max. " + str(k_fold_max) + " k-folds:           \n" + str(worst_scores))
+
+
+    #Using this method best (most generalizable) models are:
+    #Note this is without any hyperparameter tuning
+    #Some models could perform better than those listed below after hyperparameter tuning
+    #However due to timing contraints, per-model hyperparameter tuning for all models is not feasible
+    #Therefore, hyperparameter tuning will only be done on the below models (subject to change)
+        # LinearRegression
+        # SGDRegressor
+        # Lars
+        # Ridge
+        # BayesianRidge
+    #Showed potential
+        # OrthogonalMatchinPursuit
+        # RandomForestRegressor
+        # KNeighboursRegressor
+        # NuSVR
+        # AdaBoostRegressor
+        # GradientBoostingRegressor
+        # PLSRegression
+        # ARDRegression
+        # HuberRegressor
