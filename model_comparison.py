@@ -28,33 +28,14 @@ if __name__ == '__main__':
     X = StandardScaler().fit_transform(X)
 
     scoring = "neg_mean_squared_error"
-    k_fold_max = 7 #number of folds to cut data into for training
+    k_fold_max = 10 #number of folds to cut data into for training
     num_shuffles = 100 #number of times to score models (data shuffled every time)
     print("Initializing Models...")
     models = [
             ['LinearRegression: ', LinearRegression()],
             ['SGDRegressor: ', SGDRegressor()],
-            ['Lars: ', Lars(normalize=False)],
             ['Ridge: ', Ridge()],
-            ['BayesianRidge: ', BayesianRidge()],
-            ['ARDRegression: ', ARDRegression()],
-            ['HuberRegressor: ', HuberRegressor()],
-            ['AdaBoostRegressor: ', AdaBoostRegressor()],
-            ['GradientBoostingRegressor: ', GradientBoostingRegressor()],
-            ['NuSVR: ', NuSVR()],
-            ['RandomForestRegressor: ', RandomForestRegressor()],
-            ['PLSRegression: ', PLSRegression()],
-            ['OrthogonalMatchingPursuit: ', OrthogonalMatchingPursuit(normalize=False)],
-            ['KNeighborsRegressor: ', KNeighborsRegressor()],
-            ['DecisionTreeRegressor: ', DecisionTreeRegressor()],
-            ['PassiveAggressiveRegressor: ', PassiveAggressiveRegressor()],
-            #['MLPRegressor: ', MLPRegressor()],
-            ['SVR: ', SVR()],
-            #['Lasso: ', Lasso()],
-            #['LassoLars: ', LassoLars(normalize=False)],
-            #['KernelRidge: ', KernelRidge()],
-            #['ElasticNet: ', ElasticNet()]
-            ]
+            ['BayesianRidge: ', BayesianRidge()]]
 
     for k_fold in range(k_fold_max-1): #get worst score for each model for each k-fold value
         worst_scores = {} #save worst score for each model over all attempts with this k-fold
@@ -68,7 +49,7 @@ if __name__ == '__main__':
                 overall_progress = (k_fold + current_k_progress)/(k_fold_max-1)
                 print("Scoring models... " + str(100*overall_progress) + "%                ", end="\r")
     print("Final results w max. " + str(k_fold_max) + " k-folds:           \n")
-    for name, score in worst_scores:
+    for name, score in worst_scores.items():
         print(name, str(score))
 
 
