@@ -18,45 +18,42 @@ import numpy as np
 
 if __name__ == '__main__':
     pwd = os.path.realpath(os.path.dirname(__file__))
-    x_csv = pwd + '/data/clean/data_x.csv'
+    train_csv = pwd + '/data/Past_Students.csv'
     X = []
-    with open(x_csv, "r") as f:
-        for entry in f.read().split('\n'):
-            X.append(list(map(float, entry.split(","))))
-    X = StandardScaler().fit_transform(X)
-    y_csv = pwd + '/data/clean/data_y.csv'
     Y = []
-    with open(y_csv, "r") as f:
-        for entry in f.read().split('\n'):
-            Y.append(float(entry))
+    with open(train_csv, "r") as f:
+        for entry in f.read().split('\n')[1:]:
+            X.append(list(map(float, entry.split(",")))[1:-1])
+            Y.append(list(map(float, entry.split(",")))[-1])
+    X = StandardScaler().fit_transform(X)
 
     scoring = "neg_mean_squared_error"
     k_fold_max = 7 #number of folds to cut data into for training
-    num_shuffles = 25 #number of times to score models (data shuffled every time)
+    num_shuffles = 10 #number of times to score models (data shuffled every time)
     print("Initializing Models...")
     models = [
-            ['DecisionTreeRegressor :',DecisionTreeRegressor()],
             ['LinearRegression :', LinearRegression()],
-            ['PassiveAggressiveRegressor :', PassiveAggressiveRegressor()],
-            ['OrthogonalMatchingPursuit :', OrthogonalMatchingPursuit(normalize=False)],
-            ['MLPRegressor :', MLPRegressor()],
             ['SGDRegressor :', SGDRegressor()],
-            ['RandomForestRegressor :', RandomForestRegressor()],
-            ['KNeighborsRegressor :', KNeighborsRegressor()],
-            ['SVR :', SVR()],
-            ['NuSVR :', NuSVR()],
+            ['Lars: ', Lars(normalize=False)],
+            ['Ridge: ', Ridge()],
+            ['BayesianRidge: ', BayesianRidge()],
+            ['ARDRegression: ', ARDRegression()],
+            ['HuberRegressor: ', HuberRegressor()],
             ['AdaBoostRegressor :', AdaBoostRegressor()],
             ['GradientBoostingRegressor: ', GradientBoostingRegressor()],
+            ['NuSVR :', NuSVR()],
+            ['RandomForestRegressor :', RandomForestRegressor()],
             ['PLSRegression: ', PLSRegression()],
+            ['OrthogonalMatchingPursuit :', OrthogonalMatchingPursuit(normalize=False)],
+            ['KNeighborsRegressor :', KNeighborsRegressor()],
+            ['DecisionTreeRegressor :',DecisionTreeRegressor()],
+            ['PassiveAggressiveRegressor :', PassiveAggressiveRegressor()],
+            ['MLPRegressor :', MLPRegressor()],
+            ['SVR :', SVR()],
             ['Lasso: ', Lasso()],
-            ['Lars: ', Lars(normalize=False)],
             ['LassoLars: ', LassoLars(normalize=False)],
-            ['ARDRegression: ', ARDRegression()],
-            ['Ridge: ', Ridge()],
             ['KernelRidge: ', KernelRidge()],
-            ['BayesianRidge: ', BayesianRidge()],
-            ['ElasticNet: ', ElasticNet()],
-            ['HuberRegressor: ', HuberRegressor()]]
+            ['ElasticNet: ', ElasticNet()]]
 
     for k_fold in range(k_fold_max-1): #get worst score for each model for each k-fold value
         worst_scores = {} #save worst score for each model over all attempts with this k-fold
